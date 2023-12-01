@@ -3,7 +3,6 @@ package org.example.pageobjects;
 
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -12,7 +11,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.List;
-import java.util.Set;
+
 
 public class YandexPage {
 
@@ -107,13 +106,6 @@ public class YandexPage {
         return this;
     }
 
-    public YandexPage showDozen() throws InterruptedException {
-        showAs.click();
-        showAs.sendKeys(Keys.UP, Keys.ENTER);
-        Thread.sleep(2000);
-        return this;
-    }
-
     public List<WebElement> getList() {
         return noteList;
     }
@@ -142,6 +134,4 @@ public class YandexPage {
             }
         }
     }
-
-    // Removed the switchToNextPage method and the static app reference.
 }
