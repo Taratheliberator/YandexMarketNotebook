@@ -1,34 +1,23 @@
 package org.example.tests;
 
-import org.example.appmanager.ApplicationManager;
 import org.example.pageobjects.YandexPage;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.openqa.selenium.WebElement;
-
 
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+public class MarketTest extends TestBase{
 
-public class MarketTest {
-
-    private static ApplicationManager app;
     private static YandexPage yandexPage;
 
-    @BeforeAll
-    public static void setUp() throws Exception {
-        app = new ApplicationManager();
-        app.init();
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
         yandexPage = app.yandex();
-    }
-
-    @AfterAll
-    public static void tearDown() {
-        app.stop();
     }
 
     @Test

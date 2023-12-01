@@ -1,22 +1,20 @@
 package org.example.tests;
 
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.openqa.selenium.remote.BrowserType;
+import org.junit.jupiter.api.AfterEach;
 import org.example.appmanager.ApplicationManager;
+import org.junit.jupiter.api.BeforeEach;
 
 public class TestBase {
 
-    private static final ApplicationManager app = new ApplicationManager();
+    protected static final ApplicationManager app = new ApplicationManager();
 
-    @BeforeAll
-    public static void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         app.init();
     }
 
-    @AfterAll
-    public static void tearDown() {
+    @AfterEach
+    public void tearDown() {
         app.stop();
     }
 }
