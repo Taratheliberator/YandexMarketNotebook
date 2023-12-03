@@ -1,5 +1,6 @@
 package org.example.tests;
 
+import io.qameta.allure.Step;
 import org.example.pageobjects.YandexPage;
 import org.junit.jupiter.api.*;
 import org.openqa.selenium.WebElement;
@@ -8,9 +9,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.example.Assertions.assertTrue;
 
-public class MarketTest extends TestBase{
+public class MarketTest extends TestBase {
 
     private static YandexPage yandexPage;
 
@@ -22,8 +23,12 @@ public class MarketTest extends TestBase{
 
     @Test
     public void pageMarketTest() throws InterruptedException {
-        yandexPage.goToMarket()
+        executeMarketTest();
+    }
 
+
+    private void executeMarketTest() throws InterruptedException {
+        yandexPage.goToMarket()
                 .goToComputers()
                 .goToNotebooks()
                 .openFilter()
@@ -32,32 +37,86 @@ public class MarketTest extends TestBase{
                 .setVendorName("HP")
                 .setVendorName("Lenovo")
                 .showResults()
-                .loadAllNotebooks();
+                .loadFirstPageNotebooks();
+        List<WebElement> firstPageNotebooks = yandexPage.getList();
+        System.out.println("\nКоличество загруженных ноутбуков: " + firstPageNotebooks.size());
+        String target = firstPageNotebooks.get(0).getText();
+        System.out.println("\nПервый элемент:\n" + target);
 
-        List<WebElement> notebooks = yandexPage.getList();
-        int numberOfNotebooks = notebooks.size();
-        System.out.println("Количество загруженных ноутбуков: " + numberOfNotebooks);
+        yandexPage.loadAllNotebooks();
+        List<WebElement> allNotebooks = yandexPage.getList();
+        for (WebElement notebook : allNotebooks) {
+            String notebookInfo = notebook.getText();
+            boolean isValid = isLaptopValid(notebookInfo);
 
-        List<WebElement> noteList = yandexPage.getList();
-        for (WebElement element : noteList) {
-            System.out.println(element.getText());
+            System.out.println("Ноутбук: " + notebookInfo);
+            System.out.println("Валиден: " + isValid);
         }
-        System.out.println("Размер массива " + noteList.size());
 
-        String target = noteList.get(0).getText();
-        System.out.println("Первый элемент " + target);
 
-        Pattern pattern = Pattern.compile("Ноутбук [^\\n]+");
+        validateFirstNotebookModel(target);
+
+    }
+
+
+    private void validateFirstNotebookModel(String target) {
+        Pattern pattern = Pattern.compile(".*(Ноутбук|ноутбук) [^\\n]+");
+
         Matcher matcher = pattern.matcher(target);
 
-        if (matcher.find()) {
-            String laptopModel = matcher.group();
-            System.out.println("Найденная модель ноутбука: " + laptopModel);
+        assertTrue(matcher.find(), "Модель ноутбука не найдена " + target);
 
-            yandexPage.getSearch(laptopModel);
-            assertTrue(yandexPage.isTargetPresent(laptopModel), "Target Notebook doesn't shown on search page");
-        } else {
-            System.out.println("Модель ноутбука не найдена.");
+        String laptopModel = matcher.group();
+        System.out.println("\nНайденная модель ноутбука: " + laptopModel);
+        yandexPage.getSearch(laptopModel);
+        assertTrue(yandexPage.isTargetPresent(laptopModel), "Ноутбук " + laptopModel + " не показан на странице поиска");
+    }
+
+    public static boolean isLaptopValid(String element) {
+        String lowerCaseElement = element.toLowerCase();
+        String manufacturer = "";
+        if (lowerCaseElement.contains("hp")) {
+            manufacturer = "HP";
+        } else if (lowerCaseElement.contains("lenovo")) {
+            manufacturer = "Lenovo";
+        }
+
+        // Использование функции findFirstPrice для нахождения первой цены
+        String firstPriceStr = findFirstPrice(element);
+        System.out.println("firstPriceStr" + firstPriceStr);
+        // Проверка на наличие производителя
+        if (manufacturer.isEmpty() || firstPriceStr.equals("Цена не найдена")) {
+            return false;
+        }
+
+        // Проверка, что цена находится в диапазоне от 10000 до 30000
+        try {
+            int firstPrice = Integer.parseInt(firstPriceStr.replaceAll("[^\\d]", ""));
+            System.out.println("firstPrice" + firstPrice);
+            return firstPrice >= 10000 && firstPrice <= 30000;
+        } catch (NumberFormatException e) {
+            System.out.println("Цена: Невозможно определить (неверный формат)");
+            return false;
         }
     }
+
+    public static String findFirstPrice(String text) {
+        // Регулярное выражение для поиска цены
+        // Учитывает различные форматы чисел, включая специальные символы
+        Pattern pattern = Pattern.compile("\\d{1,3}(?:[\\s ,\\xA0]?\\d{3})*\\s?₽");
+        Matcher matcher = pattern.matcher(text);
+
+        // Поиск первой цены
+        if (matcher.find()) {
+            // Возвращаем цену, удаляя все, кроме цифр
+            return matcher.group(0).replaceAll("[^\\d]", "");
+        } else {
+            return "Цена не найдена";
+        }
+    }
+
+
+
+
+
 }

@@ -2,9 +2,9 @@ package org.example.pageobjects;
 
 
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import io.qameta.allure.Step;
+import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -57,7 +57,7 @@ public class YandexPage {
         PageFactory.initElements(wd, this);
         this.wd = wd;
     }
-
+    @Step("Нажатие на каталог")
     public YandexPage goToMarket() {
         marketButton.click();
         return this;
@@ -85,13 +85,35 @@ public class YandexPage {
 
     public YandexPage setVendorName(String name) {
         WebElement vendorName = wd.findElement(By.xpath(String.format("//label[contains(.,'%s')]", name)));
+
+        // Прокрутка страницы с помощью JavaScript
+        JavascriptExecutor js = (JavascriptExecutor) wd;
+        js.executeScript("arguments[0].scrollIntoView(true);", vendorName);
+
+        // Клик по элементу
         vendorName.click();
+
         return this;
     }
 
+
     public boolean isTargetPresent(String name) {
-        WebElement note = wd.findElement(By.xpath(String.format("//span[contains(text(),'%s')]", name)));
-        return note != null;
+        WebDriverWait wait = new WebDriverWait(wd, 10);
+
+
+        Actions actions = new Actions(wd);
+        actions.keyDown(Keys.CONTROL).sendKeys(Keys.END).perform();
+
+
+        wait.until(ExpectedConditions.jsReturnsValue("return document.readyState==\"complete\";"));
+
+
+        try {
+            WebElement note = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(String.format("//span[contains(text(),'%s')]", name))));
+            return note != null && note.isDisplayed();
+        } catch (TimeoutException e) {
+            return false;
+        }
     }
 
     public YandexPage setDownRange(int i) {
@@ -110,11 +132,50 @@ public class YandexPage {
         return noteList;
     }
 
-    public String getSearch(String target) {
+    public void  getSearch(String target) {
         searchField.click();
         searchField.sendKeys(target);
         searchButton.click();
-        return (noteList.get(0).getAttribute("title"));
+    }
+    @Step("Выполнение loadFirstPageNotebooks")
+    public void loadFirstPageNotebooks() {
+        JavascriptExecutor js = (JavascriptExecutor) wd;
+        int maxAttempts = 20; // Максимальное количество попыток
+        int attempt = 0; // Счетчик попыток
+
+        while (true) {
+            List<WebElement> currentItems = wd.findElements(By.xpath("//*[@data-autotest-id='offer-snippet' or @data-autotest-id='product-snippet']"));
+            int initialCount = currentItems.size();
+
+            // Прокрутка до конца страницы
+            js.executeScript("window.scrollTo(0, document.body.scrollHeight);");
+
+            // Задержка перед следующей проверкой
+            try {
+                Thread.sleep(500); // Задержка в полсекунды
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            // Проверка наличия новых элементов
+            List<WebElement> newItems = wd.findElements(By.xpath("//*[@data-autotest-id='offer-snippet' or @data-autotest-id='product-snippet']"));
+            if (newItems.size() > initialCount) {
+
+                for (WebElement item : newItems.subList(initialCount, newItems.size())) {
+                    System.out.println("Новый элемент: " + item.getText());
+                }
+                continue; // Если появились новые элементы, продолжаем цикл
+            }
+
+            attempt++;
+            if (attempt >= maxAttempts) {
+                // Проверка, что элементов больше 12
+                assert newItems.size() > 12 : "Количество элементов меньше или равно 12";
+                break; // Если достигнуто максимальное количество попыток, выходим из цикла
+            }
+        }
+
+        // Продолжение выполнения кода после выхода из цикла
     }
 
     public void loadAllNotebooks() {
@@ -134,4 +195,7 @@ public class YandexPage {
             }
         }
     }
+
+
+
 }
