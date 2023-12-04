@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.example.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+//import static org.example.Assertions.assertTrue;
 
 public class MarketTest extends TestBase {
 
@@ -103,7 +105,9 @@ public class MarketTest extends TestBase {
     public static String findFirstPrice(String text) {
         // Регулярное выражение для поиска цены
         // Учитывает различные форматы чисел, включая специальные символы
-        Pattern pattern = Pattern.compile("\\d{1,3}(?:[\\s ,\\xA0]?\\d{3})*\\s?₽");
+        Pattern pattern = Pattern.compile("\\d{1,3}(?:[\\s ,\\xA0\u2009]*\\d{3})*[\\s ,\\xA0\u2009]*₽"
+
+        );
         Matcher matcher = pattern.matcher(text);
 
         // Поиск первой цены
