@@ -51,69 +51,20 @@ public class MarketTest extends TestBase {
         for (WebElement notebook : allNotebooks) {
             String notebookInfo = notebook.getText();
 
-            assertTrue(isLaptopValid(notebookInfo), "Ноутбук невалиден: " + notebookInfo);
+            assertTrue(yandexPage.isLaptopValid(notebookInfo), "Ноутбук невалиден: " + notebookInfo);
         }
-
-
-        validateFirstNotebookModel(target);
-
-    }
-
-
-    private void validateFirstNotebookModel(String target) {
-        Pattern pattern = Pattern.compile(".*(Ноутбук|ноутбук) [^\\n]+");
-
-        Matcher matcher = pattern.matcher(target);
-
-        assertTrue(matcher.find(), "Модель ноутбука не найдена " + target);
-
-        String laptopModel = matcher.group();
-        System.out.println("\nИскомая модель ноутбука: " + laptopModel);
-        yandexPage.getSearch(laptopModel);
-        assertTrue(yandexPage.isTargetPresent(laptopModel), "Ноутбук " + laptopModel + " не показан на странице поиска");
-    }
-
-    public static boolean isLaptopValid(String element) {
-        String lowerCaseElement = element.toLowerCase();
-        String manufacturer = "";
-        if (lowerCaseElement.contains("hp")) {
-            manufacturer = "HP";
-        } else if (lowerCaseElement.contains("lenovo")) {
-            manufacturer = "Lenovo";
-        }
-
-        String firstPriceStr = findFirstPrice(element);
-        if (manufacturer.isEmpty() || firstPriceStr.equals("Цена не найдена")) {
-            return false;
-        }
-
-        try {
-            int firstPrice = Integer.parseInt(firstPriceStr.replaceAll("[^\\d]", ""));
-            return firstPrice >= 10000 && firstPrice <= 30000;
-        } catch (NumberFormatException e) {
-            return false;
-        }
+        yandexPage.validateFirstNotebookModel(target);
     }
 
 
 
 
-    public static String findFirstPrice(String text) {
-        // Регулярное выражение для поиска цены
-        // Учитывает различные форматы чисел, включая специальные символы
-        Pattern pattern = Pattern.compile("\\d{1,3}(?:[\\s ,\\xA0\u2009]*\\d{3})*[\\s ,\\xA0\u2009]*₽"
 
-        );
-        Matcher matcher = pattern.matcher(text);
 
-        // Поиск первой цены
-        if (matcher.find()) {
-            // Возвращаем цену, удаляя все, кроме цифр
-            return matcher.group(0).replaceAll("[^\\d]", "");
-        } else {
-            return "Цена не найдена";
-        }
-    }
+
+
+
+
 
 
 }
