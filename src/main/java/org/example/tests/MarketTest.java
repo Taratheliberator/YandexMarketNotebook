@@ -51,14 +51,7 @@ public class MarketTest extends TestBase {
         for (WebElement notebook : allNotebooks) {
             String notebookInfo = notebook.getText();
 
-           // System.out.println("Ноутбук: " + notebookInfo);
-            try {
-                isLaptopValid(notebookInfo);
-              //  System.out.println("Валиден: true");
-            } catch (IllegalArgumentException e) {
-            //    System.out.println("\nНоутбук: " + notebookInfo);
-                System.out.println("\nНоутбук " + "невалиден. Причина: " + e.getMessage() + notebookInfo + "\n");
-            }
+            assertTrue(isLaptopValid(notebookInfo), "Ноутбук невалиден: " + notebookInfo);
         }
 
 
@@ -75,12 +68,12 @@ public class MarketTest extends TestBase {
         assertTrue(matcher.find(), "Модель ноутбука не найдена " + target);
 
         String laptopModel = matcher.group();
-        System.out.println("\nНайденная модель ноутбука: " + laptopModel);
+        System.out.println("\nИскомая модель ноутбука: " + laptopModel);
         yandexPage.getSearch(laptopModel);
         assertTrue(yandexPage.isTargetPresent(laptopModel), "Ноутбук " + laptopModel + " не показан на странице поиска");
     }
 
-    public static void isLaptopValid(String element) throws IllegalArgumentException {
+    public static boolean isLaptopValid(String element) {
         String lowerCaseElement = element.toLowerCase();
         String manufacturer = "";
         if (lowerCaseElement.contains("hp")) {
@@ -90,22 +83,19 @@ public class MarketTest extends TestBase {
         }
 
         String firstPriceStr = findFirstPrice(element);
-        if (manufacturer.isEmpty()) {
-            throw new IllegalArgumentException("Производитель не найден" + "\n");
-        }
-        if (firstPriceStr.equals("Цена не найдена")) {
-            throw new IllegalArgumentException("Цена не найдена");
+        if (manufacturer.isEmpty() || firstPriceStr.equals("Цена не найдена")) {
+            return false;
         }
 
         try {
             int firstPrice = Integer.parseInt(firstPriceStr.replaceAll("[^\\d]", ""));
-            if (firstPrice < 10000 || firstPrice > 30000) {
-                throw new IllegalArgumentException("Цена вне допустимого диапазона");
-            }
+            return firstPrice >= 10000 && firstPrice <= 30000;
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Неверный формат цены");
+            return false;
         }
     }
+
+
 
 
     public static String findFirstPrice(String text) {
@@ -124,9 +114,6 @@ public class MarketTest extends TestBase {
             return "Цена не найдена";
         }
     }
-
-
-
 
 
 }
