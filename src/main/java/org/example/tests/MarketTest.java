@@ -41,18 +41,24 @@ public class MarketTest extends TestBase {
                 .showResults()
                 .loadFirstPageNotebooks();
         List<WebElement> firstPageNotebooks = yandexPage.getList();
-        System.out.println("\nКоличество загруженных ноутбуков: " + firstPageNotebooks.size());
+        System.out.println("\nКоличество загруженных ноутбуков на первой странице: " + firstPageNotebooks.size());
         String target = firstPageNotebooks.get(0).getText();
         System.out.println("\nПервый элемент:\n" + target);
 
         yandexPage.loadAllNotebooks();
         List<WebElement> allNotebooks = yandexPage.getList();
+        System.out.println("\nКоличество загруженных ноутбуков на всех страницах: " + firstPageNotebooks.size());
         for (WebElement notebook : allNotebooks) {
             String notebookInfo = notebook.getText();
-            boolean isValid = isLaptopValid(notebookInfo);
 
-            System.out.println("Ноутбук: " + notebookInfo);
-            System.out.println("Валиден: " + isValid);
+           // System.out.println("Ноутбук: " + notebookInfo);
+            try {
+                isLaptopValid(notebookInfo);
+              //  System.out.println("Валиден: true");
+            } catch (IllegalArgumentException e) {
+            //    System.out.println("\nНоутбук: " + notebookInfo);
+                System.out.println("\nНоутбук " + "невалиден. Причина: " + e.getMessage() + notebookInfo + "\n");
+            }
         }
 
 
@@ -74,7 +80,7 @@ public class MarketTest extends TestBase {
         assertTrue(yandexPage.isTargetPresent(laptopModel), "Ноутбук " + laptopModel + " не показан на странице поиска");
     }
 
-    public static boolean isLaptopValid(String element) {
+    public static void isLaptopValid(String element) throws IllegalArgumentException {
         String lowerCaseElement = element.toLowerCase();
         String manufacturer = "";
         if (lowerCaseElement.contains("hp")) {
@@ -83,24 +89,24 @@ public class MarketTest extends TestBase {
             manufacturer = "Lenovo";
         }
 
-        // Использование функции findFirstPrice для нахождения первой цены
         String firstPriceStr = findFirstPrice(element);
-        System.out.println("firstPriceStr" + firstPriceStr);
-        // Проверка на наличие производителя
-        if (manufacturer.isEmpty() || firstPriceStr.equals("Цена не найдена")) {
-            return false;
+        if (manufacturer.isEmpty()) {
+            throw new IllegalArgumentException("Производитель не найден" + "\n");
+        }
+        if (firstPriceStr.equals("Цена не найдена")) {
+            throw new IllegalArgumentException("Цена не найдена");
         }
 
-        // Проверка, что цена находится в диапазоне от 10000 до 30000
         try {
             int firstPrice = Integer.parseInt(firstPriceStr.replaceAll("[^\\d]", ""));
-            System.out.println("firstPrice" + firstPrice);
-            return firstPrice >= 10000 && firstPrice <= 30000;
+            if (firstPrice < 10000 || firstPrice > 30000) {
+                throw new IllegalArgumentException("Цена вне допустимого диапазона");
+            }
         } catch (NumberFormatException e) {
-            System.out.println("Цена: Невозможно определить (неверный формат)");
-            return false;
+            throw new IllegalArgumentException("Неверный формат цены");
         }
     }
+
 
     public static String findFirstPrice(String text) {
         // Регулярное выражение для поиска цены

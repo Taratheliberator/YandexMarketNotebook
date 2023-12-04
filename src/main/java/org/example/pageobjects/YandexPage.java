@@ -161,9 +161,9 @@ public class YandexPage {
             List<WebElement> newItems = wd.findElements(By.xpath("//*[@data-autotest-id='offer-snippet' or @data-autotest-id='product-snippet']"));
             if (newItems.size() > initialCount) {
 
-                for (WebElement item : newItems.subList(initialCount, newItems.size())) {
-                    System.out.println("Новый элемент: " + item.getText());
-                }
+//                for (WebElement item : newItems.subList(initialCount, newItems.size())) {
+//                    System.out.println("Новый элемент: " + item.getText());
+//                }
                 continue; // Если появились новые элементы, продолжаем цикл
             }
 
