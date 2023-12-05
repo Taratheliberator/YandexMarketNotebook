@@ -1,21 +1,21 @@
 package org.example.tests;
 
-import io.qameta.allure.Step;
 import org.example.pageobjects.YandexPage;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.openqa.selenium.WebElement;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-//import static org.example.Assertions.assertTrue;
-
 public class MarketTest extends TestBase {
 
-    private static YandexPage yandexPage;
+    private YandexPage yandexPage;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -23,23 +23,21 @@ public class MarketTest extends TestBase {
         yandexPage = app.yandex();
     }
 
-    @Test
-    public void pageMarketTest() throws InterruptedException {
-        executeMarketTest();
-    }
-
-
-    private void executeMarketTest() throws InterruptedException {
+    @ParameterizedTest
+    @MethodSource("provideDataForMarketTest")
+    public void pageMarketTest(List<String> vendors, int priceFrom, int priceTo) throws InterruptedException {
         yandexPage.goToMarket()
                 .goToComputers()
                 .goToNotebooks()
                 .openFilter()
-                .setDownRange(10000)
-                .setUpRange(30000)
-                .setVendorName("HP")
-                .setVendorName("Lenovo")
-                .showResults()
+                .setDownRange(priceFrom)
+                .setUpRange(priceTo);
+        for (String vendor : vendors) {
+            yandexPage.setVendorName(vendor);
+        }
+        yandexPage.showResults()
                 .loadFirstPageNotebooks();
+
         List<WebElement> firstPageNotebooks = yandexPage.getList();
         System.out.println("\nКоличество загруженных ноутбуков на первой странице: " + firstPageNotebooks.size());
         String target = firstPageNotebooks.get(0).getText();
@@ -47,7 +45,7 @@ public class MarketTest extends TestBase {
 
         yandexPage.loadAllNotebooks();
         List<WebElement> allNotebooks = yandexPage.getList();
-        System.out.println("\nКоличество загруженных ноутбуков на всех страницах: " + firstPageNotebooks.size());
+        System.out.println("\nКоличество загруженных ноутбуков на всех страницах: " + allNotebooks.size());
         for (WebElement notebook : allNotebooks) {
             String notebookInfo = notebook.getText();
 
@@ -56,15 +54,21 @@ public class MarketTest extends TestBase {
         yandexPage.validateFirstNotebookModel(target);
     }
 
-
-
-
-
-
-
-
-
-
-
-
+    private static Stream<Arguments> provideDataForMarketTest() {
+        return Stream.of(
+                Arguments.of(Arrays.asList("HP", "Lenovo"), 10000, 30000)
+                // Добавьте другие комбинации если нужно
+        );
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
