@@ -61,40 +61,40 @@ public class YandexPage {
         PageFactory.initElements(wd, this);
         this.wd = wd;
     }
-    @Step("Нажатие на каталог")
+
     public YandexPage goToMarket() {
         marketButton.click();
         return this;
     }
-
+    @Step("Переход в раздел ноутбуков и компьютеров")
     public YandexPage goToComputers() {
         computersButton.click();
         return this;
     }
-
+    @Step("Переход к списку ноутбуков")
     public YandexPage goToNotebooks() {
         notebooksButton.click();
         return this;
     }
-
+    @Step("Открытие фильтров")
     public YandexPage openFilter() {
         allFilters.click();
         return this;
     }
-
+    @Step("Отображение результатов фильтра")
     public YandexPage showResults() {
         resultsButton.click();
         return this;
     }
-
+    @Step("Выбор производителя: {name}")
     public YandexPage setVendorName(String name) {
         WebElement vendorName = wd.findElement(By.xpath(String.format("//label[contains(.,'%s')]", name)));
 
-        // Прокрутка страницы с помощью JavaScript
+
         JavascriptExecutor js = (JavascriptExecutor) wd;
         js.executeScript("arguments[0].scrollIntoView(true);", vendorName);
 
-        // Клик по элементу
+
         vendorName.click();
 
         return this;
@@ -119,13 +119,13 @@ public class YandexPage {
             return false;
         }
     }
-
+    @Step("Установка нижнего предела цены: {i}")
     public YandexPage setDownRange(int i) {
         rangeFrom.click();
         rangeFrom.sendKeys(Integer.toString(i));
         return this;
     }
-
+    @Step("Установка верхнего предела цены: {i}")
     public YandexPage setUpRange(int i) {
         rangeTo.click();
         rangeTo.sendKeys(Integer.toString(i));
@@ -141,47 +141,46 @@ public class YandexPage {
         searchField.sendKeys(target);
         searchButton.click();
     }
-    @Step("Выполнение loadFirstPageNotebooks")
+    @Step("Загрузка первой страницы ноутбуков и проверка на загрузку больше 12 штук")
     public void loadFirstPageNotebooks() {
         JavascriptExecutor js = (JavascriptExecutor) wd;
-        int maxAttempts = 20; // Максимальное количество попыток
-        int attempt = 0; // Счетчик попыток
+        int maxAttempts = 20;
+        int attempt = 0;
 
         while (true) {
             List<WebElement> currentItems = wd.findElements(By.xpath("//*[@data-autotest-id='offer-snippet' or @data-autotest-id='product-snippet']"));
             int initialCount = currentItems.size();
 
-            // Прокрутка до конца страницы
+
             js.executeScript("window.scrollTo(0, document.body.scrollHeight);");
 
-            // Задержка перед следующей проверкой
+
             try {
-                Thread.sleep(500); // Задержка в полсекунды
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
-            // Проверка наличия новых элементов
+
             List<WebElement> newItems = wd.findElements(By.xpath("//*[@data-autotest-id='offer-snippet' or @data-autotest-id='product-snippet']"));
             if (newItems.size() > initialCount) {
 
 //                for (WebElement item : newItems.subList(initialCount, newItems.size())) {
 //                    System.out.println("Новый элемент: " + item.getText());
 //                }
-                continue; // Если появились новые элементы, продолжаем цикл
+                continue;
             }
 
             attempt++;
             if (attempt >= maxAttempts) {
                 // Проверка, что элементов больше 12
                 assert newItems.size() > 12 : "Количество элементов меньше или равно 12";
-                break; // Если достигнуто максимальное количество попыток, выходим из цикла
+                break;
             }
         }
 
-        // Продолжение выполнения кода после выхода из цикла
     }
-
+    @Step("Загрузка всех ноутбуков в списке")
     public void loadAllNotebooks() {
         WebDriverWait wait = new WebDriverWait(wd, 10);
         while (true) {
@@ -199,7 +198,7 @@ public class YandexPage {
             }
         }
     }
-
+    @Step("Проверка наличия модели ноутбука: {target}")
     public void validateFirstNotebookModel(String target) {
         Pattern pattern = Pattern.compile(".*(Ноутбук|ноутбук) [^\\n]+");
 
@@ -234,16 +233,14 @@ public class YandexPage {
         }
     }
     public static String findFirstPrice(String text) {
-        // Регулярное выражение для поиска цены
-        // Учитывает различные форматы чисел, включая специальные символы
+
         Pattern pattern = Pattern.compile("\\d{1,3}(?:[\\s ,\\xA0\u2009]*\\d{3})*[\\s ,\\xA0\u2009]*₽"
 
         );
         Matcher matcher = pattern.matcher(text);
 
-        // Поиск первой цены
         if (matcher.find()) {
-            // Возвращаем цену, удаляя все, кроме цифр
+
             return matcher.group(0).replaceAll("[^\\d]", "");
         } else {
             return "Цена не найдена";
