@@ -51,7 +51,7 @@ public class MarketTest extends TestBase {
         for (WebElement notebook : allNotebooks) {
             String notebookInfo = notebook.getText();
 
-          //  assertTrue(yandexPage.isLaptopValid(notebookInfo), "\nНоутбук не удовлетворяет условиям фильтра: \n" + notebookInfo);
+            assertTrue(yandexPage.isLaptopValid(notebookInfo), "\nНоутбук не удовлетворяет условиям фильтра: \n" + notebookInfo);
         }
         yandexPage.validateFirstNotebookModel(target);
     }

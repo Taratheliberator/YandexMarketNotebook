@@ -180,7 +180,7 @@ public class YandexPage {
         }
 
     }
-    @Step("Загрузка всех ноутбуков в списке")
+    @Step("Загрузка списка всех ноутбуков")
     public void loadAllNotebooks() {
         WebDriverWait wait = new WebDriverWait(wd, 10);
         while (true) {
@@ -198,7 +198,7 @@ public class YandexPage {
             }
         }
     }
-    @Step("Проверка наличия модели ноутбука: {target}")
+    @Step("Проверка наличия искомой модели ноутбука {target} на странице поиска:")
     public void validateFirstNotebookModel(String target) {
         Pattern pattern = Pattern.compile(".*(Ноутбук|ноутбук) [^\\n]+");
 
@@ -211,6 +211,8 @@ public class YandexPage {
         getSearch(laptopModel);
         assertTrue(isTargetPresent(laptopModel), "Ноутбук " + laptopModel + " не показан на странице поиска");
     }
+
+    @Step("Проверка ноутбуков на соответствие условиям фильтра ")
     public static boolean isLaptopValid(String element) {
         String lowerCaseElement = element.toLowerCase();
         String manufacturer = "";
