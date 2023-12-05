@@ -13,17 +13,31 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.example.helpers.Assertions.assertTrue;
-
+/**
+ * Класс MarketTest содержит тесты для проверки функциональности фильтрации ноутбуков на Яндекс Маркете.
+ * Тесты параметризованы для возможности проверки различных комбинаций фильтров.
+ */
 public class MarketTest extends TestBase {
 
     private YandexPage yandexPage;
-
+    /**
+     * Начальная настройка для каждого теста.
+     * Инициализирует страницу YandexPage.
+     */
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         yandexPage = app.yandex();
     }
-
+    /**
+     * Тестирование функционала фильтрации ноутбуков на Яндекс Маркете.
+     * Параметризованный тест, который выполняется для различных производителей и ценовых диапазонов.
+     *
+     * @param vendors   Список производителей для фильтрации.
+     * @param priceFrom Нижняя граница ценового диапазона.
+     * @param priceTo   Верхняя граница ценового диапазона.
+     * @throws InterruptedException в случае прерывания потока во время ожидания.
+     */
     @ParameterizedTest
     @MethodSource("provideDataForMarketTest")
     @Step("Тестирование фильтрации ноутбуков с параметрами: производители - {vendors}, цена от {priceFrom} до {priceTo}")
@@ -51,11 +65,16 @@ public class MarketTest extends TestBase {
         for (WebElement notebook : allNotebooks) {
             String notebookInfo = notebook.getText();
 
-            assertTrue(yandexPage.isLaptopValid(notebookInfo), "\nНоутбук не удовлетворяет условиям фильтра: \n" + notebookInfo);
+           assertTrue(yandexPage.isLaptopValid(notebookInfo), "\nНоутбук не удовлетворяет условиям фильтра: \n" + notebookInfo);
         }
         yandexPage.validateFirstNotebookModel(target);
     }
-
+    /**
+     * Предоставляет данные для параметризованных тестов.
+     * Метод возвращает поток аргументов, содержащих различные комбинации производителей и ценовых диапазонов.
+     *
+     * @return Поток данных для тестирования.
+     */
     private static Stream<Arguments> provideDataForMarketTest() {
         return Stream.of(
                 Arguments.of(Arrays.asList("HP", "Lenovo"), 10000, 30000)
